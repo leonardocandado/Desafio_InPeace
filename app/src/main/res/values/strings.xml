@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Desafio InPeace</string>
+    <string name="buscar">BUSCAR</string>
+    <string name="amigos">AMIGOS</string>
+    <string name="meus_amigos">Meus amigos</string>
+</resources>
