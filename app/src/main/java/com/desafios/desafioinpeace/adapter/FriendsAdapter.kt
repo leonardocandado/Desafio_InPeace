@@ -49,7 +49,9 @@ class FriendsAdapter(private var items: List<Friend>) :
                     val filteredResults = ArrayList<Friend>()
 
                     for (friendModel in items) {
-                        if (friendModel.first_name?.contains(searchChar) == true ||
+                        if (friendModel.first_name?.lowercase()?.contains(searchChar) == true ||
+                            friendModel.last_name?.lowercase()?.contains(searchChar) == true ||
+                            friendModel.first_name?.contains(searchChar) == true ||
                             friendModel.last_name?.contains(searchChar) == true
                         ) {
                             filteredResults.add(friendModel)
@@ -71,5 +73,6 @@ class FriendsAdapter(private var items: List<Friend>) :
         }
         return filter
     }
+
 
 }

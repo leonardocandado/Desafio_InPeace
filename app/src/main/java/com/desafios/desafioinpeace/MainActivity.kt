@@ -3,25 +3,25 @@ package com.desafios.desafioinpeace
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.desafios.desafioinpeace.adapter.FriendsAdapter
 import com.desafios.desafioinpeace.databinding.ActivityMainBinding
 import com.desafios.desafioinpeace.model.Friend
-import com.desafios.desafioinpeace.model.FriendResponse
-import com.desafios.desafioinpeace.service.FriendApiService
-import com.desafios.desafioinpeace.service.FriendsRepository
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import java.util.Locale.filter
+import com.desafios.desafioinpeace.service.RetrofitService
+import com.desafios.desafioinpeace.viewModel.MainViewModel
+import com.desafios.desafioinpeace.viewModel.MainViewModelFactory
 
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var binding: ActivityMainBinding
-    lateinit var recyclerViewFriends: RecyclerView
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var recyclerViewFriends: RecyclerView
     lateinit var adapter: FriendsAdapter
+    lateinit var viewModel: MainViewModel
+    lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,31 +29,24 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        viewModel = ViewModelProvider(this, MainViewModelFactory()).get(
+            MainViewModel::class.java
+        )
         recyclerViewFriends = binding.recyclerViewAmigos
-        //Define a lista na vertical
         recyclerViewFriends.layoutManager = LinearLayoutManager(this)
 
-        getFriendData { friend: List<Friend> ->
+        getFriendData()
+        searchFriend()
+        refresh()
+
+    }
+
+    private fun getFriendData() {
+        viewModel.getFriendData{ friend: List<Friend> ->
             adapter = FriendsAdapter(friend)
             recyclerViewFriends.adapter = adapter
         }
-        searchFriend()
-    }
 
-    private fun getFriendData(callback: (List<Friend>) -> Unit) {
-        val apiService = FriendApiService.getInstance().create(FriendsRepository::class.java)
-        apiService.getFriendList().enqueue(object : Callback<FriendResponse> {
-            override fun onFailure(call: Call<FriendResponse>, t: Throwable) {
-                //implementar erro
-            }
-            override fun onResponse(
-                call: Call<FriendResponse>,
-                response: Response<FriendResponse>
-            ) {
-                return callback(response.body()!!.data)
-            }
-
-        })
     }
 
     private fun searchFriend() {
@@ -72,4 +65,12 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    private fun refresh(){
+        swipeRefreshLayout = binding.swipeRefresh
+        swipeRefreshLayout.setOnRefreshListener{
+            getFriendData()
+            swipeRefreshLayout.isRefreshing = false
+        }
+
+    }
 }
